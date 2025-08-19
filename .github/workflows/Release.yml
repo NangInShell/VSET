@@ -1,19 +1,18 @@
-name: CI-build
+name: Release
 
 on:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - '**.md'
-      - LICENSE
-  pull_request:
-    paths-ignore:
-      - '**.md'
-      - LICENSE
   workflow_dispatch:
 
 jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      DATE: ${{ steps.get_date.outputs.DATE }}
+    steps:
+      - name: Get current date
+        id: get_date
+        run: echo "DATE=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
   windows:
     strategy:
       matrix:
@@ -64,3 +63,28 @@ jobs:
         with:
           name: VSET
           path: dist/win-unpacked/*.7z*
+
+  Release:
+    needs: [setup, windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: asset
+
+      - name: Flatten asset directory
+        run: |
+          tree asset
+          mkdir dist
+          find asset -type f -print0 | xargs -0 -I{} cp "{}" dist/
+          cd dist && ls -l
+
+      - name: Create Release and Upload Release Asset
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Release ${{ needs.setup.outputs.DATE }}
+          tag_name: ${{ needs.setup.outputs.DATE }}
+          body: Auto Release.
+          draft: false
+          prerelease: false
+          files: dist/*
