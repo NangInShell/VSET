@@ -1,0 +1,33 @@
+appId: com.vset.ai
+productName: VSET
+
+icon: resources/icon.png
+
+files:
+  - '!**/.vscode/*'
+  - '!src/*'
+  - '!electron.vite.config.{js,ts,mjs,cjs}'
+  - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
+  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
+  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+  - '!resources/VSET-core/**'
+
+asarUnpack:
+  - resources/*.png
+  - resources/*.svg
+  - resources/*.ico
+
+extraResources:
+  - from: resources/VSET-core
+    to: VSET-core
+
+win:
+  executableName: VSET
+
+nsis:
+  artifactName: ${name}-${version}-setup.${ext}
+  shortcutName: ${productName}
+  uninstallDisplayName: ${productName}
+  createDesktopShortcut: always
+
+npmRebuild: false
