@@ -1,3 +1,4 @@
+import type { TaskConfig } from '@shared/type/taskConfig'
 import path from 'node:path'
 import { app } from 'electron'
 
@@ -30,7 +31,6 @@ export function getExecPath(): { vspipe: string, ffmpeg: string, ffprobe: string
 
 /**
  * 获取 VSET-core 中的额外超分模型文件夹路径
- * @returns {string} 额外超分模型文件夹路径
  */
 export function getExtraSRModelPath(): string {
   return path.join(getCorePath(), 'vs-coreplugins', 'models', 'VSET_ExtraSrModel')
@@ -38,19 +38,16 @@ export function getExtraSRModelPath(): string {
 
 /**
  * 获取 VSET 生成的设置文件路径
- * 暂时存放在 config_json.outputfolder 目录下
- * @param config_json
+ * 暂时存放在 outputfolder 目录下
  */
-export function getGenSettingsPath(config_json): string {
-  return path.join(config_json.outputfolder, 'setting.json')
+export function getGenSettingsPath(taskConfig: TaskConfig): string {
+  return path.join(taskConfig.outputFolder, 'setting.json')
 }
 
 /**
  * 获取 VSET 生成的 vpy 文件路径
- * 暂时存放在 config_json.outputfolder 目录下
- * @param config_json
- * @param base_name 生成的 vpy 文件名（不含扩展名）
+ * 暂时存放在 outputfolder 目录下
  */
-export function getGenVpyPath(config_json, base_name: string): string {
-  return path.join(config_json.outputfolder, `${base_name}.vpy`)
+export function getGenVpyPath(taskConfig: TaskConfig, baseName: string): string {
+  return path.join(taskConfig.outputFolder, `${baseName}.vpy`)
 }

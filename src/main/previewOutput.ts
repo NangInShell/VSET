@@ -1,28 +1,29 @@
+import type { TaskConfig } from '@shared/type/taskConfig'
+import type { IpcMainEvent } from 'electron'
 import { Buffer } from 'node:buffer'
 import { spawn } from 'node:child_process'
-import { writeFileSync } from 'node:fs'
 import path from 'node:path'
 import iconv from 'iconv-lite'
 import { addProcess, removeProcess } from './childProcessManager'
 import { getExecPath, getGenVpyPath } from './getCorePath'
-import { generate_vpy } from './runCommand'
+import { writeVpyFile } from './writeFile'
 
-export async function preview(event, config_json): Promise<void> {
+export async function preview(event: IpcMainEvent, taskConfig: TaskConfig): Promise<void> {
   const vspipePath = getExecPath().vspipe
 
-  const videos = config_json.fileList
-  if (videos?.length === 0) {
+  if (!taskConfig.fileList || taskConfig.fileList.length === 0) {
+    event.sender.send('ffmpeg-output', '错误: 没有提供用于预览的文件。\n')
     event.sender.send('ffmpeg-finish')
     return
   }
-  const video = videos[0]
 
-  const baseName = path.basename(video, path.extname(video))
-  const vpyPath = getGenVpyPath(config_json, baseName)
+  const video = taskConfig.fileList[0] // 只预览第一个视频
 
   // ========== 生成 vpy 文件 ==========
-  const vpyFile = generate_vpy(config_json, video)
-  writeFileSync(vpyPath, vpyFile)
+  // 生成唯一 vpy 路径
+  const baseName = path.basename(video, path.extname(video))
+  const vpyPath = getGenVpyPath(taskConfig, baseName)
+  await writeVpyFile(null, vpyPath, taskConfig.vpyContent, video)
 
   let info: {
     width: string
@@ -78,12 +79,12 @@ export async function preview(event, config_json): Promise<void> {
   event.sender.send('ffmpeg-finish')
 }
 
-export async function previewFrame(event: any, vpyfile: string, currentFrame: number): Promise<void> {
+export async function previewFrame(event: IpcMainEvent, vpyPath: string, currentFrame: number): Promise<void> {
   const vspipePath = getExecPath().vspipe
   const ffmpegPath = getExecPath().ffmpeg
 
   // 构造一行命令
-  const cmd = `"${vspipePath}" -c y4m --start ${currentFrame} --end ${currentFrame} "${vpyfile}" - | "${ffmpegPath}" -y -f yuv4mpegpipe -i - -frames:v 1 -vcodec png -f image2pipe -`
+  const cmd = `"${vspipePath}" -c y4m --start ${currentFrame} --end ${currentFrame} "${vpyPath}" - | "${ffmpegPath}" -y -f yuv4mpegpipe -i - -frames:v 1 -vcodec png -f image2pipe -`
 
   const vspipePreviewProcess = spawn(cmd, { shell: true })
   addProcess(vspipePreviewProcess)

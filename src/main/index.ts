@@ -1,14 +1,13 @@
-import { writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import { app, BrowserWindow, ipcMain, nativeImage, shell } from 'electron'
 import appIcon from '../../resources/icon.png?asset'
 import { killAllProcesses } from './childProcessManager'
-import { getGenSettingsPath } from './getCorePath'
 import { getCpuInfo, getGpuInfo } from './getSystemInfo'
 import { openDirectory } from './openDirectory'
 import { preview, previewFrame } from './previewOutput'
-import { runCommand } from './runCommand'
+import { PauseCommand, runCommand } from './runCommand'
+import { writeSettingsJson } from './writeFile'
 
 function createWindow(): BrowserWindow {
   const mainWindow = new BrowserWindow({
@@ -19,7 +18,7 @@ function createWindow(): BrowserWindow {
     show: false,
     autoHideMenuBar: true,
     icon: nativeImage.createFromPath(appIcon),
-    title: 'VSET 4.2.2',
+    title: 'VSET 4.3.6',
     webPreferences: {
       preload: path.join(__dirname, '../preload/index.js'),
       sandbox: false,
@@ -29,16 +28,15 @@ function createWindow(): BrowserWindow {
   // ipcMain
   ipcMain.on('execute-command', runCommand)
 
+  ipcMain.on('pause', PauseCommand)
+
   ipcMain.on('preview', preview)
 
   ipcMain.on('preview-frame', previewFrame)
 
   ipcMain.on('stop-all-processes', killAllProcesses)
 
-  ipcMain.on('generate-json', (_, data) => {
-    const filePath = getGenSettingsPath(data)
-    writeFileSync(filePath, JSON.stringify(data, null, 2))
-  })
+  ipcMain.on('generate-json', writeSettingsJson)
 
   ipcMain.handle('open-folder-dialog', openDirectory)
 

@@ -1,16 +1,11 @@
 <script setup lang="ts">
 import type { VNode } from 'vue'
 import { useAppStore } from '@renderer/store/AppStore'
-import useFilterconfigStore from '@renderer/store/FilterStore'
 // ✅ 引入状态管理（其他配置）
-import useInputconfigStore from '@renderer/store/InputStore'
-import useOutputconfigStore from '@renderer/store/OutputStote'
-import useSrsettingconfigStore from '@renderer/store/SrSettingsStore'
 
-import useVfisettingconfigStore from '@renderer/store/VfiSettingsStore'
+import { buildTaskConfig } from '@renderer/utils/getTaskConfig'
 import { DownloadOutline } from '@vicons/ionicons5'
 import { NButton, NIcon, NImage, useMessage } from 'naive-ui'
-import { storeToRefs } from 'pinia'
 import { computed, h, onMounted, ref } from 'vue'
 
 const appStore = useAppStore()
@@ -23,78 +18,6 @@ const currentFrame = ref(0)
 const previewImageSrc = ref('')
 const loading = ref(false)
 const isRunning = computed(() => appStore.isRunning)
-// 引入其他 store 数据
-const InputConfigStore = useInputconfigStore()
-const { fileList } = storeToRefs(InputConfigStore)
-
-const SrSettingStore = useSrsettingconfigStore()
-const {
-  useSR,
-  SRMethodValue,
-  RealcuganTileValue,
-  RealcuganInferenceValue,
-  RealcuganModelValue,
-  RealcuganAlphaValue,
-  RealesrganInferenceValue,
-  RealesrganModelValue,
-  RealesrganTileValue,
-  RealesrganScaleValue,
-  // ArtCNNInferenceValue,
-  // ArtCNNModelValue,
-  // ArtCNNTileValue,
-
-  Waifu2xInferenceValue,
-  Waifu2xModelValue,
-  Waifu2xTileValue,
-
-  SwinIRInferenceValue,
-  SwinIRModelValue,
-  SwinIRTileValue,
-} = storeToRefs(SrSettingStore)
-
-const VfiSettingStore = useVfisettingconfigStore()
-const {
-  useVfi,
-  VfiMethodValue,
-  RifeInferenceValue,
-  RifeModelValue,
-  RifeScaleValue,
-  RifeMultiValue,
-  RifeEnsembleValue,
-  RifeDetectionValue,
-} = storeToRefs(VfiSettingStore)
-
-const FilterConfigStore = useFilterconfigStore()
-const {
-  UseResize_BeforeEnhance,
-  UseResize_AfterEnhance,
-  ResizeWidth_BeforeEnhance,
-  ResizeHeight_BeforeEnhance,
-  ResizeWidth_AfterEnhance,
-  ResizeHeight_AfterEnhance,
-  ReduceLeft_BeforeEnhance,
-  ReduceRight_BeforeEnhance,
-  ReduceOn_BeforeEnhance,
-  ReduceDown_BeforeEnhance,
-  ReduceLeft_AfterEnhance,
-  ReduceRight_AfterEnhance,
-  ReduceOn_AfterEnhance,
-  ReduceDown_AfterEnhance,
-} = storeToRefs(FilterConfigStore)
-
-const OutputConfigStore = useOutputconfigStore()
-const {
-  bitValue,
-  crfValue,
-  encoderValue,
-  qualityValue,
-  videoContainer,
-  AudioContainer,
-  isUseCrf,
-  isSaveAudio,
-  isSavesubtitle,
-  outputfolder,
-} = storeToRefs(OutputConfigStore)
 
 // 保存图片真实宽高
 const imageNaturalWidth = ref(0)
@@ -166,69 +89,11 @@ function startPreview() {
     return
   appStore.setRunning(true)
 
-  const fileListNames = fileList.value.map(file => (file.path).replace(/\\/g, '/'))
-
-  const jsonData = {
-    fileList: fileListNames,
-    useSR: useSR.value,
-    SRMethodValue: SRMethodValue.value,
-    RealcuganTileValue: RealcuganTileValue.value,
-    RealcuganInferenceValue: RealcuganInferenceValue.value,
-    RealcuganModelValue: RealcuganModelValue.value,
-    RealcuganAlphaValue: RealcuganAlphaValue.value,
-    RealesrganInferenceValue: RealesrganInferenceValue.value,
-    RealesrganModelValue: RealesrganModelValue.value,
-    RealesrganTileValue: RealesrganTileValue.value,
-    RealesrganScaleValue: RealesrganScaleValue.value,
-    // ArtCNNInferenceValue: ArtCNNInferenceValue.value,
-    // ArtCNNModelValue: ArtCNNModelValue.value,
-    // ArtCNNTileValue: ArtCNNTileValue.value,
-    Waifu2xInferenceValue: Waifu2xInferenceValue.value,
-    Waifu2xModelValue: Waifu2xModelValue.value,
-    Waifu2xTileValue: Waifu2xTileValue.value,
-    SwinIRInferenceValue: SwinIRInferenceValue.value,
-    SwinIRModelValue: SwinIRModelValue.value,
-    SwinIRTileValue: SwinIRTileValue.value,
-
-    useVfi: useVfi.value,
-    VfiMethodValue: VfiMethodValue.value,
-    RifeInferenceValue: RifeInferenceValue.value,
-    RifeModelValue: RifeModelValue.value,
-    RifeScaleValue: RifeScaleValue.value,
-    RifeMultiValue: RifeMultiValue.value,
-    RifeEnsembleValue: RifeEnsembleValue.value,
-    RifeDetectionValue: RifeDetectionValue.value,
-
-    UseResize_BeforeEnhance: UseResize_BeforeEnhance.value,
-    UseResize_AfterEnhance: UseResize_AfterEnhance.value,
-    ResizeWidth_BeforeEnhance: ResizeWidth_BeforeEnhance.value,
-    ResizeHeight_BeforeEnhance: ResizeHeight_BeforeEnhance.value,
-    ResizeWidth_AfterEnhance: ResizeWidth_AfterEnhance.value,
-    ResizeHeight_AfterEnhance: ResizeHeight_AfterEnhance.value,
-    ReduceLeft_BeforeEnhance: ReduceLeft_BeforeEnhance.value,
-    ReduceRight_BeforeEnhance: ReduceRight_BeforeEnhance.value,
-    ReduceOn_BeforeEnhance: ReduceOn_BeforeEnhance.value,
-    ReduceDown_BeforeEnhance: ReduceDown_BeforeEnhance.value,
-    ReduceLeft_AfterEnhance: ReduceLeft_AfterEnhance.value,
-    ReduceRight_AfterEnhance: ReduceRight_AfterEnhance.value,
-    ReduceOn_AfterEnhance: ReduceOn_AfterEnhance.value,
-    ReduceDown_AfterEnhance: ReduceDown_AfterEnhance.value,
-
-    bitValue: bitValue.value,
-    crfValue: crfValue.value,
-    encoderValue: encoderValue.value,
-    qualityValue: qualityValue.value,
-    videoContainer: videoContainer.value,
-    AudioContainer: AudioContainer.value,
-    isUseCrf: isUseCrf.value,
-    isSaveAudio: isSaveAudio.value,
-    isSavesubtitle: isSavesubtitle.value,
-    outputfolder: outputfolder.value,
-  }
+  const taskConfig = buildTaskConfig()
 
   window.electron.ipcRenderer.once('preview-info', handlePreviewInfo)
   window.electron.ipcRenderer.once('preview-image', handlePreviewImage)
-  window.electron.ipcRenderer.send('preview', jsonData)
+  window.electron.ipcRenderer.send('preview', taskConfig)
 }
 
 function previewFrame() {
