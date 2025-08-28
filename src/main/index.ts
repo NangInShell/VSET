@@ -1,5 +1,6 @@
 import path from 'node:path'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
+import { IpcChannelInvoke, IpcChannelSend } from '@shared/constant/ipc'
 import { app, BrowserWindow, ipcMain, nativeImage, shell } from 'electron'
 import appIcon from '../../resources/icon.png?asset'
 import { killAllProcesses } from './childProcessManager'
@@ -26,23 +27,23 @@ function createWindow(): BrowserWindow {
   })
 
   // ipcMain
-  ipcMain.on('execute-command', runCommand)
+  ipcMain.on(IpcChannelSend.EXECUTE_COMMAND, runCommand)
 
-  ipcMain.on('pause', PauseCommand)
+  ipcMain.on(IpcChannelSend.PAUSE, PauseCommand)
 
-  ipcMain.on('preview', preview)
+  ipcMain.on(IpcChannelSend.PREVIEW, preview)
 
-  ipcMain.on('preview-frame', previewFrame)
+  ipcMain.on(IpcChannelSend.PREVIEW_FRAME, previewFrame)
 
-  ipcMain.on('stop-all-processes', killAllProcesses)
+  ipcMain.on(IpcChannelSend.STOP_ALL_PROCESSES, killAllProcesses)
 
-  ipcMain.on('generate-json', writeSettingsJson)
+  ipcMain.on(IpcChannelSend.GENERATE_JSON, writeSettingsJson)
 
-  ipcMain.handle('open-folder-dialog', openDirectory)
+  ipcMain.handle(IpcChannelInvoke.OPEN_DIRECTORY_DIALOG, openDirectory)
 
-  ipcMain.handle('get-gpu-info', getGpuInfo)
+  ipcMain.handle(IpcChannelInvoke.GET_GPU_INFO, getGpuInfo)
 
-  ipcMain.handle('get-cpu-info', getCpuInfo)
+  ipcMain.handle(IpcChannelInvoke.GET_CPU_INFO, getCpuInfo)
 
   // mainWindow
   mainWindow.on('ready-to-show', () => {

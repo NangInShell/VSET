@@ -1,16 +1,14 @@
 <script setup lang="ts">
 import type { VNode } from 'vue'
 import { useAppStore } from '@renderer/store/AppStore'
-// ✅ 引入状态管理（其他配置）
-
 import { buildTaskConfig } from '@renderer/utils/getTaskConfig'
+import { IpcChannelOn, IpcChannelSend } from '@shared/constant/ipc'
 import { DownloadOutline } from '@vicons/ionicons5'
 import { NButton, NIcon, NImage, useMessage } from 'naive-ui'
 import { computed, h, onMounted, ref } from 'vue'
 
 const appStore = useAppStore()
 const message = useMessage()
-
 const vpyFilePath = ref('目标.vpy')
 
 const frameCount = ref<number>(0)
@@ -23,7 +21,7 @@ const isRunning = computed(() => appStore.isRunning)
 const imageNaturalWidth = ref(0)
 const imageNaturalHeight = ref(0)
 
-function downloadImage() {
+function downloadImage(): void {
   const a = document.createElement('a')
   a.href = previewImageSrc.value
   a.download = 'preview.png'
@@ -40,7 +38,7 @@ function customRenderToolbar(props: {
     download: VNode
     close: VNode
   }
-}) {
+}): Array<VNode> {
   return [
     props.nodes.rotateCounterclockwise,
     props.nodes.rotateClockwise,
@@ -65,14 +63,14 @@ function customRenderToolbar(props: {
   ]
 }
 
-function handlePreviewInfo(_event: any, data: any) {
+function handlePreviewInfo(_event: any, data: any): void {
   if (data && data.frames) {
     frameCount.value = Number.parseInt(data.frames)
     message.success(`检测到 ${data.frames} 帧，尺寸 ${data.width}×${data.height}`)
   }
 }
 
-function handlePreviewImage(_event: any, base64Img: string) {
+function handlePreviewImage(_event: any, base64Img: string): void {
   loading.value = false
   if (base64Img) {
     previewImageSrc.value = base64Img
@@ -84,25 +82,25 @@ function handlePreviewImage(_event: any, base64Img: string) {
   }
 }
 
-function startPreview() {
+function startPreview(): void {
   if (appStore.isRunning)
     return
   appStore.setRunning(true)
 
   const taskConfig = buildTaskConfig()
 
-  window.electron.ipcRenderer.once('preview-info', handlePreviewInfo)
-  window.electron.ipcRenderer.once('preview-image', handlePreviewImage)
-  window.electron.ipcRenderer.send('preview', taskConfig)
+  window.electron.ipcRenderer.once(IpcChannelOn.PREVIEW_INFO, handlePreviewInfo)
+  window.electron.ipcRenderer.once(IpcChannelOn.PREVIEW_IMAGE, handlePreviewImage)
+  window.electron.ipcRenderer.send(IpcChannelSend.PREVIEW, taskConfig)
 }
 
-function previewFrame() {
+function previewFrame(): void {
   loading.value = true
-  window.electron.ipcRenderer.once('preview-image', handlePreviewImage)
-  window.electron.ipcRenderer.send('preview-frame', vpyFilePath.value, currentFrame.value)
+  window.electron.ipcRenderer.once(IpcChannelOn.PREVIEW_IMAGE, handlePreviewImage)
+  window.electron.ipcRenderer.send(IpcChannelSend.PREVIEW_FRAME, vpyFilePath.value, currentFrame.value)
 }
 
-function onFrameChange(val: number | null) {
+function onFrameChange(val: number | null): void {
   if (appStore.isRunning)
     return
   appStore.setRunning(true)
@@ -112,7 +110,7 @@ function onFrameChange(val: number | null) {
   }
 }
 
-function onImageLoad(event: Event) {
+function onImageLoad(event: Event): void {
   const img = event.target as HTMLImageElement
   imageNaturalWidth.value = img.naturalWidth
   imageNaturalHeight.value = img.naturalHeight
@@ -120,11 +118,11 @@ function onImageLoad(event: Event) {
 
 // ✅ 挂载监听器
 onMounted(() => {
-  window.electron.ipcRenderer.on('ffmpeg-finish', () => {
+  window.electron.ipcRenderer.on(IpcChannelOn.FFMPEG_FINISHED, () => {
     appStore.setRunning(false) // ✅ 渲染完成后恢复按钮
   })
 
-  window.electron.ipcRenderer.on('preview-vpyPath', (_event, vpyfile: string) => {
+  window.electron.ipcRenderer.on(IpcChannelOn.PREVIEW_VPY_PATH, (_event, vpyfile: string) => {
     vpyFilePath.value = vpyfile
   })
 })

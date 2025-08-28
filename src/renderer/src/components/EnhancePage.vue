@@ -2,9 +2,7 @@
 import useSrsettingconfigStore from '@renderer/store/SrSettingsStore'
 import useVfisettingconfigStore from '@renderer/store/VfiSettingsStore'
 import { storeToRefs } from 'pinia'
-
 import { ref } from 'vue'
-
 import {
   Inference_options,
   RealcuganModel_options,
@@ -15,7 +13,6 @@ import {
   SRMethod_options,
   VsmlrtTile_options,
   Waifu2xModel_options,
-  // ArtCNNModel_options,
 } from '../store/SRMethod'
 import {
   Inference_Vfi_options,
@@ -69,10 +66,11 @@ const {
 const SrExtra = ref(false)
 const VfiExtra = ref(false)
 
-function ShowSrExtra() {
+function ShowSrExtra(): void {
   SrExtra.value = true
 }
-function ShowVfiExtra() {
+
+function ShowVfiExtra(): void {
   VfiExtra.value = true
 }
 </script>
