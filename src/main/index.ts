@@ -4,7 +4,7 @@ import { IpcChannelInvoke, IpcChannelSend } from '@shared/constant/ipc'
 import { app, BrowserWindow, ipcMain, nativeImage, shell } from 'electron'
 import appIcon from '../../resources/icon.png?asset'
 import { killAllProcesses } from './childProcessManager'
-import { getCpuInfo, getGpuInfo } from './getSystemInfo'
+import { getCpuInfo, getExtraSRModelList, getGpuInfo, getMemoryInfo } from './getSystemInfo'
 import { openDirectory } from './openDirectory'
 import { preview, previewFrame } from './previewOutput'
 import { PauseCommand, runCommand } from './runCommand'
@@ -62,6 +62,10 @@ function createWindow(): BrowserWindow {
   ipcMain.handle(IpcChannelInvoke.GET_GPU_INFO, getGpuInfo)
 
   ipcMain.handle(IpcChannelInvoke.GET_CPU_INFO, getCpuInfo)
+
+  ipcMain.handle(IpcChannelInvoke.GET_MEMORY_INFO, getMemoryInfo)
+
+  ipcMain.handle(IpcChannelInvoke.GET_EXTRA_SR_MODEL_LIST, getExtraSRModelList)
 
   // mainWindow
   mainWindow.on('ready-to-show', () => {

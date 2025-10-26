@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import useSrsettingconfigStore from '@renderer/store/SrSettingsStore'
+import { useSystemInfoStore } from '@renderer/store/SystemInfoStore'
 import useVfisettingconfigStore from '@renderer/store/VfiSettingsStore'
 import { storeToRefs } from 'pinia'
-import { ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import {
   Inference_options,
   RealcuganModel_options,
   RealesrganModel_options,
   RealesrganScale_options,
-  SR_ExtraModel_options,
   sr_numstreams_options,
   SRMethod_options,
   VsmlrtTile_options,
@@ -21,6 +21,17 @@ import {
   vfi_numstreams_options,
   VfiMethod_options,
 } from '../store/VfiMethod'
+
+const SystemInfoStore = useSystemInfoStore()
+const { extraSrModelList } = storeToRefs(SystemInfoStore)
+
+// 创建动态的 SR_ExtraModel 选项列表
+const SR_ExtraModel_options = computed(() => {
+  return extraSrModelList.value.map(model => ({
+    value: model,
+    label: model,
+  }))
+})
 
 const SrSettingStore = useSrsettingconfigStore()
 const VfiSettingStore = useVfisettingconfigStore()
@@ -73,6 +84,23 @@ function ShowSrExtra(): void {
 function ShowVfiExtra(): void {
   VfiExtra.value = true
 }
+
+// 当 SRMethodValue 变为 SR_ExtraModel 时，加载模型列表
+function loadExtraSRModels() {
+  if (SRMethodValue.value === 'SR_ExtraModel') {
+    SystemInfoStore.fetchExtraSRModelList()
+  }
+}
+
+// 监听 SRMethodValue 的变化
+watch(SRMethodValue, () => {
+  loadExtraSRModels()
+})
+
+onMounted(() => {
+  // 组件加载时，如果当前方法已经是 SR_ExtraModel，则加载模型列表
+  loadExtraSRModels()
+})
 </script>
 
 <template>

@@ -14,9 +14,10 @@ import {
   SquareOutline as Square,
 } from '@vicons/ionicons5'
 import { NIcon } from 'naive-ui'
-import { defineComponent, h, ref } from 'vue'
+import { defineComponent, h, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import appIcon from '../../../resources/icon.png'
+import { useSystemInfoStore } from './store/SystemInfoStore'
 
 function renderIcon(icon: Component): () => VNode {
   return () => h(NIcon, null, { default: () => h(icon) })
@@ -36,6 +37,14 @@ export default defineComponent({
   setup() {
     const router = useRouter()
     const collapsed = ref(true)
+    const systemInfoStore = useSystemInfoStore()
+
+    // 在应用启动时初始化系统信息
+    onMounted(() => {
+      systemInfoStore.initSystemInfo()
+      // 清空并重新加载模型列表，确保每次启动都获取最新模型
+      systemInfoStore.extraSrModelList = []
+    })
 
     const onMenuChange = (value: string): void => {
       router.push(value)
