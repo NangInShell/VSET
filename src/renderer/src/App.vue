@@ -87,7 +87,7 @@ export default defineComponent({
           <div class="left-section">
             <img class="app-icon" :src="appIcon" alt="app icon">
             <div class="title">
-              VSET 4.4.0
+              VSET 4.4.1
             </div>
           </div>
           <div class="window-buttons">
