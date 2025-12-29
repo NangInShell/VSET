@@ -43,12 +43,19 @@ function generate_cmd(taskConfig: TaskConfig, hasAudio: boolean, hasSubtitle: bo
 }
 
 // 新增：获取输入视频信息的独立函数
-async function getInputVideoInfo(event: IpcMainEvent, video: string): Promise<{
+async function getInputVideoInfo(video: string): Promise<{
   hasAudio: boolean
   hasSubtitle: boolean
   videoStream: any
+  frameRateMode: string
+  frameCount: string
+  frameRate: string
+  resolution: string
+  audioText: string
+  subtitleText: string
 }> {
   const ffprobePath = getExecPath().ffprobe
+  const mediainfoPath = getExecPath().mediainfo
 
   const ffprobeCommand = `"${ffprobePath}" -v error -show_streams -of json "${video}"`
   const { stdout: probeOut } = await exec(ffprobeCommand)
@@ -59,25 +66,41 @@ async function getInputVideoInfo(event: IpcMainEvent, video: string): Promise<{
   const hasAudio = allStreams.some((s: any) => s.codec_type === 'audio')
   const hasSubtitle = allStreams.some((s: any) => s.codec_type === 'subtitle')
 
-  if (videoStream) {
-    const frameCount = videoStream.nb_frames || '未知'
-    const frameRate = videoStream.avg_frame_rate || '未知'
-    const resolution = `${videoStream.width}x${videoStream.height}`
-    const audioText = hasAudio ? '是' : '否'
-    const subtitleText = hasSubtitle ? '是' : '否'
-
-    event.sender.send(IpcChannelOn.FFMPEG_OUTPUT, `正在处理输入视频 ${video} 的信息:\n`)
-    event.sender.send(IpcChannelOn.FFMPEG_OUTPUT, `帧数(输入): ${frameCount}\n`)
-    event.sender.send(IpcChannelOn.FFMPEG_OUTPUT, `帧率(输入): ${frameRate}\n`)
-    event.sender.send(IpcChannelOn.FFMPEG_OUTPUT, `分辨率(输入): ${resolution}\n`)
-    event.sender.send(IpcChannelOn.FFMPEG_OUTPUT, `是否含有音频: ${audioText}\n`)
-    event.sender.send(IpcChannelOn.FFMPEG_OUTPUT, `是否含有字幕: ${subtitleText}\n`)
+  // 调用 MediaInfo.exe 获取 FrameRate_Mode
+  let frameRateMode = '未知'
+  try {
+    const mediainfoCommand = `"${mediainfoPath}" --Output=JSON "${video}"`
+    const { stdout: mediainfoOut } = await exec(mediainfoCommand)
+    const mediainfoData = JSON.parse(mediainfoOut)
+    
+    // MediaInfo JSON 格式：media.track[0].FrameRate_Mode（视频轨道通常是第一个）
+    if (mediainfoData.media && mediainfoData.media.track && mediainfoData.media.track.length > 0) {
+      const videoTrack = mediainfoData.media.track.find((track: any) => track['@type'] === 'Video')
+      if (videoTrack && videoTrack.FrameRate_Mode) {
+        frameRateMode = videoTrack.FrameRate_Mode
+      }
+    }
   }
+  catch (error) {
+    console.error('MediaInfo 执行出错:', error)
+  }
+
+  const frameCount = videoStream ? (videoStream.nb_frames || '未知') : '未知'
+  const frameRate = videoStream ? (videoStream.avg_frame_rate || '未知') : '未知'
+  const resolution = videoStream ? `${videoStream.width}x${videoStream.height}` : '未知'
+  const audioText = hasAudio ? '是' : '否'
+  const subtitleText = hasSubtitle ? '是' : '否'
 
   return {
     hasAudio,
     hasSubtitle,
     videoStream,
+    frameRateMode,
+    frameCount,
+    frameRate,
+    resolution,
+    audioText,
+    subtitleText,
   }
 }
 
@@ -131,11 +154,6 @@ async function getOutputVideoInfo(event: IpcMainEvent, vpyPath: string): Promise
       info.frames = vspipeOut.match(/Frames:\s*(\d+)/)?.[1] || '0'
       info.fps = vspipeOut.match(/FPS:\s*([\d/]+)\s*\(([\d.]+) fps\)/)?.[2] || '0'
 
-      event.sender.send(IpcChannelOn.FFMPEG_OUTPUT, `======= 输出视频信息 =======\n`)
-      event.sender.send(IpcChannelOn.FFMPEG_OUTPUT, `宽: ${info.width}\n`)
-      event.sender.send(IpcChannelOn.FFMPEG_OUTPUT, `高: ${info.height}\n`)
-      event.sender.send(IpcChannelOn.FFMPEG_OUTPUT, `帧数: ${info.frames}\n`)
-      event.sender.send(IpcChannelOn.FFMPEG_OUTPUT, `帧率: ${info.fps}\n`)
       resolve()
     })
 
@@ -167,7 +185,24 @@ export async function runCommand(event: IpcMainEvent, taskConfig: TaskConfig): P
     }
     try {
       // ========== 1. 获取输入视频信息 ==========
-      const { hasAudio, hasSubtitle } = await getInputVideoInfo(event, video)
+      const { hasAudio, hasSubtitle, frameCount, frameRate, resolution, audioText, subtitleText, frameRateMode } = await getInputVideoInfo(video)
+
+      const frameRateModeText = frameRateMode === 'VFR' ? '是' : frameRateMode === 'CFR' ? '否' : '未知'
+
+      event.sender.send(IpcChannelOn.FFMPEG_OUTPUT, `正在处理输入视频 ${video} 的信息:\n`)
+      event.sender.send(IpcChannelOn.FFMPEG_OUTPUT, `帧数(输入): ${frameCount}\n`)
+      event.sender.send(IpcChannelOn.FFMPEG_OUTPUT, `帧率(输入): ${frameRate}\n`)
+      event.sender.send(IpcChannelOn.FFMPEG_OUTPUT, `分辨率(输入): ${resolution}\n`)
+      event.sender.send(IpcChannelOn.FFMPEG_OUTPUT, `是否含有音频: ${audioText}\n`)
+      event.sender.send(IpcChannelOn.FFMPEG_OUTPUT, `是否含有字幕: ${subtitleText}\n`)
+      event.sender.send(IpcChannelOn.FFMPEG_OUTPUT, `视频流是否为可变帧率: ${frameRateModeText}\n`)
+
+      // 如果是可变帧率，跳过处理该视频
+      if (frameRateModeText === '是') {
+        event.sender.send(IpcChannelOn.FFMPEG_OUTPUT, `跳过可变帧率视频: ${video}\n`)
+        event.sender.send(IpcChannelOn.FFMPEG_OUTPUT, `⚠️可变帧率视频会导致渲染结果出现音画不同步的问题，请在导入VSET之前处理为固定帧率视频。\n`)
+        continue
+      }
 
       // ========== 2. 生成 vpy 文件 ==========
       const baseName = path.basename(video, path.extname(video))
@@ -176,6 +211,12 @@ export async function runCommand(event: IpcMainEvent, taskConfig: TaskConfig): P
 
       // ========== 3. 获取输出视频信息 ==========
       const info = await getOutputVideoInfo(event, vpyPath)
+
+      event.sender.send(IpcChannelOn.FFMPEG_OUTPUT, `======= 输出视频信息 =======\n`)
+      event.sender.send(IpcChannelOn.FFMPEG_OUTPUT, `宽(输出): ${info.width}\n`)
+      event.sender.send(IpcChannelOn.FFMPEG_OUTPUT, `高(输出): ${info.height}\n`)
+      event.sender.send(IpcChannelOn.FFMPEG_OUTPUT, `帧数(输出): ${info.frames}\n`)
+      event.sender.send(IpcChannelOn.FFMPEG_OUTPUT, `帧率(输出): ${info.fps}\n`)
 
       // ========== 4. 构建渲染命令 ==========
       const vspipeArgs = ffmpegCMD[0].replace(MagicStr.VPY_PATH, vpyPath)

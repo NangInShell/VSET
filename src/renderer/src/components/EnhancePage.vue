@@ -438,41 +438,42 @@ onMounted(() => {
               >
                 Extra
               </n-button>
-              <n-drawer v-model:show="SrExtra" :width="300">
-                <n-drawer-content title="准备压榨显卡了么？(SR)">
-                  <span class="demonstration" style="font-size: 20px;color: black;">通用</span>
+              <n-drawer v-model:show="SrExtra" :width="380" placement="right">
+                <n-drawer-content title="高级设置 (SR)">
+                  <div class="drawer-section">
+                    <div class="drawer-section-title">通用设置</div>
+                    <div class="drawer-item">
+                      <span class="drawer-label">num_streams</span>
+                      <el-select
+                        v-model="Sr_numstreams"
+                        placeholder="请选择"
+                        size="default"
+                        style="width: 160px"
+                      >
+                        <el-option
+                          v-for="item in sr_numstreams_options"
+                          :key="item.value"
+                          :label="item.label"
+                          :value="item.value"
+                        />
+                      </el-select>
+                    </div>
+                  </div>
 
-                  <div class="slider-demo-block">
-                    <span class="demonstration" style="font-size: 15px;color: black;">num_streams</span>
-                    <el-select
-                      v-model="Sr_numstreams"
-                      placeholder="Select"
-                      size="small"
-                      style="width: 120px"
-                    >
-                      <el-option
-                        v-for="item in sr_numstreams_options"
-                        :key="item.value"
-                        :label="item.label"
-                        :value="item.value"
+                  <n-divider style="margin: 20px 0;" />
+
+                  <div class="drawer-section">
+                    <div class="drawer-section-title">TensorRT 设置</div>
+                    <div class="drawer-item">
+                      <span class="drawer-label">cuda_graph</span>
+                      <el-switch
+                        v-model="Sr_cudagraph"
+                        size="default"
+                        active-text="启用"
+                        inactive-text="关闭"
                       />
-                    </el-select>
+                    </div>
                   </div>
-
-                  <n-divider />
-
-                  <span class="demonstration" style="font-size: 20px;color: black;">TensorRt</span>
-                  <div class="slider-demo-block">
-                    <span class="demonstration" style="font-size: 15px;color: black;">cuda_graph</span>
-                    <el-switch
-                      v-model="Sr_cudagraph"
-                      size="middle"
-                      active-text="启用"
-                      inactive-text="关闭"
-                    />
-                  </div>
-
-                  <n-divider />
                 </n-drawer-content>
               </n-drawer>
             </n-card>
@@ -615,41 +616,42 @@ onMounted(() => {
                 >
                   Extra
                 </n-button>
-                <n-drawer v-model:show="VfiExtra" :width="300">
-                  <n-drawer-content title="准备压榨显卡了么？(VFI)">
-                    <span class="demonstration" style="font-size: 20px;color: black;">通用</span>
+                <n-drawer v-model:show="VfiExtra" :width="380" placement="right">
+                  <n-drawer-content title="高级设置 (VFI)">
+                    <div class="drawer-section">
+                      <div class="drawer-section-title">通用设置</div>
+                      <div class="drawer-item">
+                        <span class="drawer-label">num_streams</span>
+                        <el-select
+                          v-model="Vfi_numstreams"
+                          placeholder="请选择"
+                          size="default"
+                          style="width: 160px"
+                        >
+                          <el-option
+                            v-for="item in vfi_numstreams_options"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value"
+                          />
+                        </el-select>
+                      </div>
+                    </div>
 
-                    <div class="slider-demo-block">
-                      <span class="demonstration" style="font-size: 15px;color: black;">num_streams</span>
-                      <el-select
-                        v-model="Vfi_numstreams"
-                        placeholder="Select"
-                        size="small"
-                        style="width: 120px"
-                      >
-                        <el-option
-                          v-for="item in vfi_numstreams_options"
-                          :key="item.value"
-                          :label="item.label"
-                          :value="item.value"
+                    <n-divider style="margin: 20px 0;" />
+
+                    <div class="drawer-section">
+                      <div class="drawer-section-title">TensorRT 设置</div>
+                      <div class="drawer-item">
+                        <span class="drawer-label">cuda_graph</span>
+                        <el-switch
+                          v-model="Vfi_cudagraph"
+                          size="default"
+                          active-text="启用"
+                          inactive-text="关闭"
                         />
-                      </el-select>
+                      </div>
                     </div>
-
-                    <n-divider />
-
-                    <span class="demonstration" style="font-size: 20px;color: black;">TensorRt</span>
-                    <div class="slider-demo-block">
-                      <span class="demonstration" style="font-size: 15px;color: black;">cuda_graph</span>
-                      <el-switch
-                        v-model="Vfi_cudagraph"
-                        size="middle"
-                        active-text="启用"
-                        inactive-text="关闭"
-                      />
-                    </div>
-
-                    <n-divider />
                   </n-drawer-content>
                 </n-drawer>
               </n-card>
@@ -731,5 +733,54 @@ onMounted(() => {
 .system-info-card-Para {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   border-radius: 12px;
+}
+
+/* 抽屉样式优化 */
+.drawer-section {
+  margin-bottom: 24px;
+}
+
+.drawer-section:last-of-type {
+  margin-bottom: 0;
+}
+
+.drawer-section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #303133;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e4e7ed;
+}
+
+.drawer-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  min-height: 44px;
+}
+
+.drawer-label {
+  font-size: 14px;
+  color: #606266;
+  font-weight: 500;
+  flex-shrink: 0;
+  margin-right: 16px;
+}
+
+:deep(.n-drawer-content__body) {
+  padding: 20px;
+}
+
+:deep(.n-drawer-header) {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid #e4e7ed;
+}
+
+:deep(.n-drawer-header__main) {
+  font-size: 18px;
+  font-weight: 600;
+  color: #303133;
 }
   </style>

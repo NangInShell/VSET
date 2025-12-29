@@ -20,13 +20,14 @@ export function getCorePath(): string {
 
 /**
  * 获取 VSET-core 中的可执行文件路径
- * @returns {object} 包含 vspipe、ffmpeg 和 ffprobe 的路径
+ * @returns {object} 包含 vspipe、ffmpeg、ffprobe 和 mediainfo 的路径
  */
-export function getExecPath(): { vspipe: string, ffmpeg: string, ffprobe: string } {
+export function getExecPath(): { vspipe: string, ffmpeg: string, ffprobe: string, mediainfo: string } {
   return {
     vspipe: path.join(getCorePath(), 'VSPipe.exe'),
     ffmpeg: path.join(getCorePath(), 'ffmpeg.exe'),
     ffprobe: path.join(getCorePath(), 'ffprobe.exe'),
+    mediainfo: path.join(getCorePath(), 'MediaInfo.exe'),
   }
 }
 
