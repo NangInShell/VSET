@@ -45,7 +45,7 @@ export function buildFFmpegCMD(): string[] {
       cmd_minor += `"-crf" "${crfValue.value}" `
     }
     else {
-      cmd_minor += `"-b:v" "${bitValue.value}m" `
+      cmd_minor += `"-b:v" "${bitValue.value}M" `
     }
   }
 

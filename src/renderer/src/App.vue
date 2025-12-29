@@ -234,7 +234,7 @@ export default defineComponent({
 
 /* 左侧边栏 */
 .left-sider {
-  ackground: #ffffff; /* 白色背景 */
+  background: #ffffff; /* 白色背景 */
   overflow: visible; /* 让 trigger 可点击 */
   position: relative;
 }

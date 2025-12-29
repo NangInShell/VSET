@@ -13,6 +13,38 @@ import { writeVpyFile } from './writeFile'
 
 const exec = promisify(execCallback)
 
+// 定义 ffprobe 输出类型接口
+interface FfprobeStream {
+  codec_type?: 'video' | 'audio' | 'subtitle'
+  nb_frames?: string
+  avg_frame_rate?: string
+  width?: number
+  height?: number
+  [key: string]: any
+}
+
+interface FfprobeMetadata {
+  streams?: FfprobeStream[]
+  [key: string]: any
+}
+
+// 定义 MediaInfo 输出类型接口
+interface MediaInfoTrack {
+  '@type'?: 'Video' | 'Audio' | 'General' | string
+  'FrameRate_Mode'?: string
+  [key: string]: any
+}
+
+interface MediaInfoMedia {
+  track?: MediaInfoTrack[]
+  [key: string]: any
+}
+
+interface MediaInfoData {
+  media?: MediaInfoMedia
+  [key: string]: any
+}
+
 function splitArgs(str: string): string[] {
   const matches = str.match(/"[^"]+"|\S+/g)
   return matches ? matches.map(s => s.replace(/^"|"$/g, '')) : []
@@ -46,7 +78,7 @@ function generate_cmd(taskConfig: TaskConfig, hasAudio: boolean, hasSubtitle: bo
 async function getInputVideoInfo(video: string): Promise<{
   hasAudio: boolean
   hasSubtitle: boolean
-  videoStream: any
+  videoStream: FfprobeStream | undefined
   frameRateMode: string
   frameCount: string
   frameRate: string
@@ -59,23 +91,23 @@ async function getInputVideoInfo(video: string): Promise<{
 
   const ffprobeCommand = `"${ffprobePath}" -v error -show_streams -of json "${video}"`
   const { stdout: probeOut } = await exec(ffprobeCommand)
-  const metadata = JSON.parse(probeOut)
+  const metadata: FfprobeMetadata = JSON.parse(probeOut)
 
-  const allStreams = metadata.streams || []
-  const videoStream = allStreams.find((s: any) => s.codec_type === 'video')
-  const hasAudio = allStreams.some((s: any) => s.codec_type === 'audio')
-  const hasSubtitle = allStreams.some((s: any) => s.codec_type === 'subtitle')
+  const allStreams: FfprobeStream[] = metadata.streams || []
+  const videoStream = allStreams.find((s: FfprobeStream) => s.codec_type === 'video')
+  const hasAudio = allStreams.some((s: FfprobeStream) => s.codec_type === 'audio')
+  const hasSubtitle = allStreams.some((s: FfprobeStream) => s.codec_type === 'subtitle')
 
   // 调用 MediaInfo.exe 获取 FrameRate_Mode
   let frameRateMode = '未知'
   try {
     const mediainfoCommand = `"${mediainfoPath}" --Output=JSON "${video}"`
     const { stdout: mediainfoOut } = await exec(mediainfoCommand)
-    const mediainfoData = JSON.parse(mediainfoOut)
+    const mediainfoData: MediaInfoData = JSON.parse(mediainfoOut)
 
     // MediaInfo JSON 格式：media.track[0].FrameRate_Mode（视频轨道通常是第一个）
     if (mediainfoData.media && mediainfoData.media.track && mediainfoData.media.track.length > 0) {
-      const videoTrack = mediainfoData.media.track.find((track: any) => track['@type'] === 'Video')
+      const videoTrack = mediainfoData.media.track.find((track: MediaInfoTrack) => track['@type'] === 'Video')
       if (videoTrack && videoTrack.FrameRate_Mode) {
         frameRateMode = videoTrack.FrameRate_Mode
       }
