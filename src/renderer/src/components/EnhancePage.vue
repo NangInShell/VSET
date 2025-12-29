@@ -86,7 +86,7 @@ function ShowVfiExtra(): void {
 }
 
 // 当 SRMethodValue 变为 SR_ExtraModel 时，加载模型列表
-function loadExtraSRModels() {
+function loadExtraSRModels(): void {
   if (SRMethodValue.value === 'SR_ExtraModel') {
     SystemInfoStore.fetchExtraSRModelList()
   }
@@ -441,7 +441,9 @@ onMounted(() => {
               <n-drawer v-model:show="SrExtra" :width="380" placement="right">
                 <n-drawer-content title="高级设置 (SR)">
                   <div class="drawer-section">
-                    <div class="drawer-section-title">通用设置</div>
+                    <div class="drawer-section-title">
+                      通用设置
+                    </div>
                     <div class="drawer-item">
                       <span class="drawer-label">num_streams</span>
                       <el-select
@@ -463,7 +465,9 @@ onMounted(() => {
                   <n-divider style="margin: 20px 0;" />
 
                   <div class="drawer-section">
-                    <div class="drawer-section-title">TensorRT 设置</div>
+                    <div class="drawer-section-title">
+                      TensorRT 设置
+                    </div>
                     <div class="drawer-item">
                       <span class="drawer-label">cuda_graph</span>
                       <el-switch
@@ -619,7 +623,9 @@ onMounted(() => {
                 <n-drawer v-model:show="VfiExtra" :width="380" placement="right">
                   <n-drawer-content title="高级设置 (VFI)">
                     <div class="drawer-section">
-                      <div class="drawer-section-title">通用设置</div>
+                      <div class="drawer-section-title">
+                        通用设置
+                      </div>
                       <div class="drawer-item">
                         <span class="drawer-label">num_streams</span>
                         <el-select
@@ -641,7 +647,9 @@ onMounted(() => {
                     <n-divider style="margin: 20px 0;" />
 
                     <div class="drawer-section">
-                      <div class="drawer-section-title">TensorRT 设置</div>
+                      <div class="drawer-section-title">
+                        TensorRT 设置
+                      </div>
                       <div class="drawer-item">
                         <span class="drawer-label">cuda_graph</span>
                         <el-switch

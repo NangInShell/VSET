@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import useFilterconfigStore from '@renderer/store/FilterStore'
 import { QTGMC_Preset_options } from '@renderer/store/FilterSetting'
+import useFilterconfigStore from '@renderer/store/FilterStore'
 import { storeToRefs } from 'pinia'
 
 const FilterConfigStore = useFilterconfigStore()

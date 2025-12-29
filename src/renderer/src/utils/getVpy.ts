@@ -84,7 +84,6 @@ GitHub: https://github.com/EutropicAI/VSET
   vpyContent += 'import vsmlrt\n'
   vpyContent += 'import havsfunc\n'
 
-
   // 前置缩放(需要在此改进色彩控制)
   if (UseResize_BeforeEnhance.value === true) {
     vpyContent += `res = core.resize.Bicubic(clip=res,width=${ResizeWidth_BeforeEnhance.value},height=${ResizeHeight_BeforeEnhance.value},format=vs.YUV420P16)\n`
@@ -320,8 +319,8 @@ GitHub: https://github.com/EutropicAI/VSET
 
     if (SRMethodValue.value === 'SR_ExtraModel') {
       // 自动添加 .onnx 扩展名
-      const modelFileName = SR_ExtraModelValue.value.endsWith('.onnx') 
-        ? SR_ExtraModelValue.value 
+      const modelFileName = SR_ExtraModelValue.value.endsWith('.onnx')
+        ? SR_ExtraModelValue.value
         : `${SR_ExtraModelValue.value}.onnx`
       const model = `${MagicStr.EXTRA_MODEL_PATH}/${modelFileName}`
 

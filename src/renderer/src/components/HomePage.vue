@@ -27,8 +27,8 @@ const filteredGPUInfo = computed(() => {
     'Standard VGA',
     'Virtual Display',
   ]
-  
-  return GPUInfo.value.filter(gpu => {
+
+  return GPUInfo.value.filter((gpu) => {
     const gpuLower = gpu.toLowerCase()
     return !virtualKeywords.some(keyword => gpuLower.includes(keyword.toLowerCase()))
   })

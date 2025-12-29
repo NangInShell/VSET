@@ -72,7 +72,7 @@ async function getInputVideoInfo(video: string): Promise<{
     const mediainfoCommand = `"${mediainfoPath}" --Output=JSON "${video}"`
     const { stdout: mediainfoOut } = await exec(mediainfoCommand)
     const mediainfoData = JSON.parse(mediainfoOut)
-    
+
     // MediaInfo JSON 格式：media.track[0].FrameRate_Mode（视频轨道通常是第一个）
     if (mediainfoData.media && mediainfoData.media.track && mediainfoData.media.track.length > 0) {
       const videoTrack = mediainfoData.media.track.find((track: any) => track['@type'] === 'Video')

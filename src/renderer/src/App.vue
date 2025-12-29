@@ -51,13 +51,13 @@ export default defineComponent({
     }
 
     // 添加折叠状态切换处理函数
-    const handleCollapseChange = (isCollapsed: boolean) => {
+    const handleCollapseChange = (isCollapsed: boolean): void => {
       collapsed.value = isCollapsed
     }
 
-    const handleMinimize = () => window.electronWindow?.minimize()
-    const handleMaximize = () => window.electronWindow?.maximize()
-    const handleClose = () => window.electronWindow?.close()
+    const handleMinimize = (): void => window.electronWindow?.minimize()
+    const handleMaximize = (): void => window.electronWindow?.maximize()
+    const handleClose = (): void => window.electronWindow?.close()
 
     router.push('/home')
 
