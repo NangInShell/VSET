@@ -5,6 +5,9 @@ export enum IpcChannelInvoke {
   OPEN_DIRECTORY_DIALOG = 'ipc:open-directory-dialog',
   GET_GPU_INFO = 'ipc:get-gpu-info',
   GET_CPU_INFO = 'ipc:get-cpu-info',
+  GET_MEMORY_INFO = 'ipc:get-memory-info',
+  GET_EXTRA_SR_MODEL_LIST = 'ipc:get-extra-sr-model-list',
+  GET_FILE_CRC32 = 'ipc:get-file-crc32',
 }
 
 /**
@@ -12,6 +15,7 @@ export enum IpcChannelInvoke {
  */
 export enum IpcChannelSend {
   EXECUTE_COMMAND = 'ipc:send:execute-command',
+  EXECUTE_TASK_COMMAND = 'ipc:send:execute-task-command',
   PAUSE = 'ipc:send:pause',
 
   PREVIEW = 'ipc:send:preview',

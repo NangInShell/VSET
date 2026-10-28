@@ -4,22 +4,25 @@ import { IpcChannelInvoke, IpcChannelSend } from '@shared/constant/ipc'
 import { app, BrowserWindow, ipcMain, nativeImage, shell } from 'electron'
 import appIcon from '../../resources/icon.png?asset'
 import { killAllProcesses } from './childProcessManager'
-import { getCpuInfo, getGpuInfo } from './getSystemInfo'
+import { getFileCrc32 } from './getCrc32'
+import { getCpuInfo, getExtraSRModelList, getGpuInfo, getMemoryInfo } from './getSystemInfo'
 import { openDirectory } from './openDirectory'
 import { preview, previewFrame } from './previewOutput'
 import { PauseCommand, runCommand } from './runCommand'
+import { runTaskCommand } from './runTaskCommand'
 import { writeSettingsJson } from './writeFile'
 
 function createWindow(): BrowserWindow {
   const mainWindow = new BrowserWindow({
-    width: 900,
-    height: 700,
-    minWidth: 900,
-    minHeight: 670,
+    width: 1000,
+    height: 875,
+    minWidth: 1000,
+    minHeight: 875,
     show: false,
     autoHideMenuBar: true,
+    frame: false,
+    resizable: true,
     icon: nativeImage.createFromPath(appIcon),
-    title: 'VSET 4.3.6',
     webPreferences: {
       preload: path.join(__dirname, '../preload/index.js'),
       sandbox: false,
@@ -27,7 +30,28 @@ function createWindow(): BrowserWindow {
   })
 
   // ipcMain
+
+  ipcMain.on('window:minimize', () => {
+    mainWindow?.minimize()
+  })
+
+  ipcMain.on('window:maximize', () => {
+    if (mainWindow?.isMaximized()) {
+      mainWindow.unmaximize()
+    }
+    else {
+      mainWindow?.maximize()
+    }
+  })
+
+  ipcMain.on('window:close', () => {
+    mainWindow?.close()
+  })
+  // RenderPage 使用 EXECUTE_COMMAND 处理当前输入列表（可多文件）
   ipcMain.on(IpcChannelSend.EXECUTE_COMMAND, runCommand)
+
+  // 任务列表使用 EXECUTE_TASK_COMMAND，单任务只处理一个视频
+  ipcMain.on(IpcChannelSend.EXECUTE_TASK_COMMAND, runTaskCommand)
 
   ipcMain.on(IpcChannelSend.PAUSE, PauseCommand)
 
@@ -44,6 +68,12 @@ function createWindow(): BrowserWindow {
   ipcMain.handle(IpcChannelInvoke.GET_GPU_INFO, getGpuInfo)
 
   ipcMain.handle(IpcChannelInvoke.GET_CPU_INFO, getCpuInfo)
+
+  ipcMain.handle(IpcChannelInvoke.GET_MEMORY_INFO, getMemoryInfo)
+
+  ipcMain.handle(IpcChannelInvoke.GET_EXTRA_SR_MODEL_LIST, getExtraSRModelList)
+
+  ipcMain.handle(IpcChannelInvoke.GET_FILE_CRC32, (_event, filePath: string) => getFileCrc32(filePath))
 
   // mainWindow
   mainWindow.on('ready-to-show', () => {

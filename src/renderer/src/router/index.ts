@@ -1,12 +1,14 @@
 import type { RouteRecordRaw } from 'vue-router'
 import { createRouter, createWebHistory } from 'vue-router'
-import EnhancePage from '../components/EnhancePage.vue'
-import FilterPage from '../components/FilterPage.vue'
-import HomePage from '../components/HomePage.vue'
-import InputPage from '../components/InputPage.vue'
-import OutputPage from '../components/OutputPage.vue'
-import PreviewPage from '../components/PreviewPage.vue'
-import RenderPage from '../components/RenderPage.vue'
+import EnhancePage from '../views/EnhancePage/EnhancePage.vue'
+import FilterPage from '../views/FilterPage/FilterPage.vue'
+import HomePage from '../views/HomePage/HomePage.vue'
+import InputPage from '../views/InputPage/InputPage.vue'
+import InputPageNew from '../views/InputPageNew/InputPageNew.vue'
+import OutputPage from '../views/OutputPage/OutputPage.vue'
+import PreviewPage from '../views/PreviewPage/PreviewPage.vue'
+import RenderPage from '../views/RenderPage/RenderPage.vue'
+import TaskPage from '../views/TaskPage/TaskPage.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -48,6 +50,16 @@ const routes: Array<RouteRecordRaw> = [
     path: '/preview',
     name: 'PreviewPage',
     component: PreviewPage,
+  },
+  {
+    path: '/input-new',
+    name: 'InputPageNew',
+    component: InputPageNew,
+  },
+  {
+    path: '/tasks',
+    name: 'TaskPage',
+    component: TaskPage,
   },
 ]
 
